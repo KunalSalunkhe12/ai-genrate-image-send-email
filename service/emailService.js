@@ -910,6 +910,7 @@ export async function sendEmails(
 
     const results = await Promise.all(emailPromises);
     console.log({ results });
+    return results;
   } catch (error) {
     console.error("Error sending email:", error);
     return null;

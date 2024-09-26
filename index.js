@@ -61,6 +61,7 @@ function formatDateMessage() {
 app.post("/send-email", async function (req, res) {
   try {
     const { email } = req.body;
+    console.log("email", email);
     const aiImageGeneratorData = await fetch(
       "https://quote-generator-90rw.onrender.com/generate-quote-image"
     );
@@ -206,6 +207,7 @@ app.get("/unsubscribe", async (req, res) => {
     await Email.findOneAndDelete({ email });
 
     res.send("You have been successfully unsubscribed.");
+    res.redirect("https://mail.google.com/mail/u/0/#inbox");
   } catch (error) {
     console.error("Error during unsubscribe:", error);
     res.status(500).send("An error occurred while unsubscribing.");
