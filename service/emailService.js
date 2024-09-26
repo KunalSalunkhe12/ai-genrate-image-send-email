@@ -1,4 +1,7 @@
 import { Resend } from "resend";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const resend = new Resend("re_aa2tFQRt_4mC4Rjc6V3Wmk8Cfywscxkxd");
 
@@ -828,7 +831,7 @@ export async function sendEmails(
                                                 You may 
                         
                                                 <a
-                                                  href="https://email.ritest.live/unsubscribe?email={{email}}"
+                                                  href="{{DOMAIN_URL}}/unsubscribe?email={{email}}"
                                                   data-link-id="131296358128682404"
                                                   style="
                                                     color: #515856;
@@ -886,7 +889,9 @@ export async function sendEmails(
     `;
     // Send email using Resend
     const emailPromises = emails.map(async (email) => {
-      const personalizedHtml = htmlTemplate.replace("{{email}}", email);
+      const personalizedHtml = htmlTemplate
+        .replace("{{email}}", email)
+        .replace("{{DOMAIN_URL}}", process.env.DOMAIN_URL);
 
       const { data, error } = await resend.emails.send({
         from: "aiagentcoach@teamlumio.ai",
