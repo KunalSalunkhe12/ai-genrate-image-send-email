@@ -828,7 +828,7 @@ export async function sendEmails(
                                                 You may 
                         
                                                 <a
-                                                  href="https://agentcoach.teamlumio.ai"
+                                                  href="https://email.ritest.live/unsubscribe?email={{email}}"
                                                   data-link-id="131296358128682404"
                                                   style="
                                                     color: #515856;
@@ -876,6 +876,7 @@ export async function sendEmails(
               ></table>
             </td>
           </tr>
+
         </tbody>
       </table>
     </div>
@@ -883,23 +884,27 @@ export async function sendEmails(
 </html>
 
     `;
-
     // Send email using Resend
-    const { data, error } = await resend.emails.send({
-      from: "aiagentcoach@teamlumio.ai",
-      to: ["ananth@lumiopartners.com"],
-      bcc: [...emails],
-      subject: subject,
-      html: htmlTemplate,
+    const emailPromises = emails.map(async (email) => {
+      const personalizedHtml = htmlTemplate.replace("{{email}}", email);
+
+      const { data, error } = await resend.emails.send({
+        from: "aiagentcoach@teamlumio.ai",
+        to: [email],
+        subject: subject,
+        html: personalizedHtml,
+      });
+
+      if (error) {
+        console.error({ error, email });
+        return null;
+      }
+
+      return data;
     });
 
-    if (error) {
-      console.error({ error });
-      return null;
-    }
-
-    console.log({ data });
-    return data;
+    const results = await Promise.all(emailPromises);
+    console.log({ results });
   } catch (error) {
     console.error("Error sending email:", error);
     return null;

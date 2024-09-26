@@ -22,10 +22,9 @@ async function init() {
 
 init();
 
-
-app.get("/",(req,res)=>{
+app.get("/", (req, res) => {
   res.send("server running update..");
-})
+});
 
 const daysOfWeek = [
   "Sunday",
@@ -66,7 +65,7 @@ app.post("/send-email", async function (req, res) {
       "https://quote-generator-90rw.onrender.com/generate-quote-image"
     );
     const aiGeneratedImageResponse = await aiImageGeneratorData.json();
-    
+
     const result = await sendEmails(
       [email],
       aiGeneratedImageResponse?.message,
@@ -81,15 +80,13 @@ app.post("/send-email", async function (req, res) {
 
     // Add email to the database if sent successfully
     await Email.create({ email });
-    console.log("new email add ",email);
+    console.log("new email add ", email);
 
     res.json({ message: "Email sent successfully", data: result });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 });
-
-
 
 // add emails
 app.post("/add-emails", async (req, res) => {
@@ -122,11 +119,11 @@ function getCurrentTime() {
   const now = new Date();
   const hours = now.getHours();
   const minutes = now.getMinutes();
-  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const ampm = hours >= 12 ? "PM" : "AM";
 
   // Convert to 12-hour format
   const formattedHours = hours % 12 || 12; // If hours is 0, set it to 12
-  const formattedMinutes = minutes < 10 ? '0' + minutes : minutes; // Add leading zero if needed
+  const formattedMinutes = minutes < 10 ? "0" + minutes : minutes; // Add leading zero if needed
 
   return `${formattedHours}:${formattedMinutes} ${ampm}`;
 }
@@ -166,25 +163,56 @@ const sendEmailsEveryDay = async () => {
   } catch (error) {
     console.error("Error during scheduled email task:", error);
   }
-}
+};
 
 let ifSent = false;
-  setInterval(() => {
-    const currentTime = getCurrentTime();
-    console.log(currentTime);
-    if (currentTime == "9:45 PM" && ifSent == false) {
-      ifSent = true;
-      console.log("cll");
-      sendEmailsEveryDay();
+setInterval(() => {
+  const currentTime = getCurrentTime();
+  console.log(currentTime);
+  if (currentTime == "9:45 PM" && ifSent == false) {
+    ifSent = true;
+    console.log("cll");
+    sendEmailsEveryDay();
+  }
+
+  if (currentTime == "9:47 PM" && ifSent == true) {
+    console.log("set false");
+    ifSent = false;
+  }
+}, 1000);
+
+app.get("/check-email", async (req, res) => {
+  try {
+    const { email } = req.query;
+
+    const existingEmail = await Email.findOne({ email });
+
+    if (existingEmail) {
+      return res.json({ subscribed: true });
     }
 
-    if (currentTime == "9:47 PM" && ifSent == true) {
-      console.log("set false");
-      ifSent = false;
-    }
-  }, 1000);
+    res.json({ subscribed: false });
+  } catch (error) {
+    console.error("Error during email check:", error);
+    res.status(500).send("An error occurred while checking the email.");
+  }
+});
+
+app.get("/unsubscribe", async (req, res) => {
+  try {
+    const { email } = req.query;
+
+    // Remove the email from the database
+    await Email.findOneAndDelete({ email });
+
+    res.send("You have been successfully unsubscribed.");
+  } catch (error) {
+    console.error("Error during unsubscribe:", error);
+    res.status(500).send("An error occurred while unsubscribing.");
+  }
+});
 
 // listen the app on 2000 port
-app.listen(process.env.PORT || 2000, () => {
+app.listen(process.env.PORT || 3001, () => {
   console.log(`server listening on port ${process.env.PORT}`);
 });
